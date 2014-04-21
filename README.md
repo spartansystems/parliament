@@ -7,7 +7,7 @@ A Ruby app that listens to GitHub events and merges pull requests when specified
 
 When Pull requests have satisfied the following criteria, they are automatically merged:
 * The sum of `+1` and `-1` in comments is greater than or equal to the configured sum. *Note: only the first vote in each comment is counted.*
-* There are no comments containing `/\[(B|b)locker\]/` (`[blocker]` or `[Blocker]`). *Note: striking through the "[blocker]" by surrounding it with `~~`, e.g. "~~[blocker]~~") will cause the comment to be ignored.*
+* There are no comments containing `/\[(B|b)locker\]/` (`[blocker]` or `[Blocker]`). *Note: striking through the "[blocker]" by surrounding it with `~~`, e.g. "~~[blocker]~~" will cause the comment to be ignored.*
 * The pull request can be merged.
 * Optionally (defaults to true), the commit status must be `success`.
 
