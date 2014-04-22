@@ -8,9 +8,9 @@ Gem::Specification.new do |spec|
   spec.version       = Parliament::VERSION
   spec.authors       = ["Colin Rymer"]
   spec.email         = ["colin.rymer@gmail.com"]
-  spec.summary       = %q{TODO: Write a short summary. Required.}
-  spec.description   = %q{TODO: Write a longer description. Optional.}
-  spec.homepage      = ""
+  spec.summary       = %q{A Rack app for automatically merging pull request when conditions are met.}
+  spec.description   = spec.summary
+  spec.homepage      = "https://github.com/primedia/parliament"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0")
