@@ -1,14 +1,17 @@
 require 'json'
+require 'pry'
 
 module Parliament
+
   class Server
     attr_reader :parliament_service
 
     OK_RESPONSE = [200, {"Content-Type" => "text/html"}, ["OK"]]
     NOT_FOUND_RESPONSE = [404, {"Content-Type" => "text/html"}, ["NOT FOUND"]]
 
-    def initialize(parliament_service = Parliamentarian.new)
+    def initialize(parliament_service = Parliamentarian.new(:event))
       @parliament_service = parliament_service
+      @logger = Logger.new('log/server.log', 'daily')
     end
 
     def call(env)
@@ -19,6 +22,7 @@ module Parliament
       if root_request(env)
         OK_RESPONSE
       elsif webhook_post_request(env)
+        @logger.info("EventType: #{event_type(env)}")
         handle_request(env)
         OK_RESPONSE
       else
@@ -52,5 +56,9 @@ module Parliament
       end
     end
 
+    def event_type(env)
+      env['HTTP_X_GITHUB_EVENT']
+    end
   end
+
 end
