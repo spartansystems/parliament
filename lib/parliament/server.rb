@@ -40,8 +40,9 @@ module Parliament
       /\/webhook/.match(env['PATH_INFO']) && env['REQUEST_METHOD'] == 'POST'
     end
 
+    # Handle the request if it is an 'issue_comment'
     def handle_request(env)
-      parliament_service.process(parsed_data(env))
+      parliament_service.process(parsed_data(env)) if event_type(env) == 'issue_comment'
     end
 
     def parsed_data(env)
