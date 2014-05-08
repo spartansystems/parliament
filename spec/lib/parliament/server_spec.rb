@@ -1,8 +1,6 @@
 require 'spec_helper'
-require 'rack/test'
 
 describe Parliament::Server do
-  include Rack::Test::Methods
 
   let(:voting_service) { double :voting_service, process: nil }
 
@@ -39,7 +37,6 @@ describe Parliament::Server do
       expect(voting_service).to receive(:process).with(parsed_payload)
     end
   end
-
 
   it 'returns a 404 for non-root and non-webhook routes' do
     get '/foo'
