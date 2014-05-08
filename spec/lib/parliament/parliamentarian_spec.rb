@@ -16,7 +16,9 @@ describe Parliament::Parliamentarian do
   describe '#process' do
     let (:parliamentarian) { Parliament::Parliamentarian.new(:event) }
 
-    parliamentarian.process
+    it "processes" do
+      parliamentarian.process
+    end
   end
 
 end
