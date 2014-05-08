@@ -1,4 +1,4 @@
-require 'github_api'
+require 'octokit'
 
 module Parliament
 
@@ -8,12 +8,17 @@ module Parliament
     end
 
     def initialize(event)
-      @event = event
+      @event  = event
       @logger = Logger.new('log/app.log', 'daily')
     end
 
     def process(data)
+      @repository      = repo(data)
+      @owner           = repo_owner(data)
+      @pull_request_id = pr_number(data)
+      @client          = Octokit::Client.new(:netrc => true)
       if data['comment'].any?
+        log_comment(data)
         if total_score(data) > 2
           merge_pull_request(data)
         end
@@ -30,25 +35,26 @@ module Parliament
     end
 
     def total_score(data)
-      github = Github.new
       score = 0
-      github.issues.comments.list(repo_owner(data),
-                                  repo(data),
-                                  request_id: pr_number(data) ) do |comment|
+      comments = @client.issue_comments "#{@owner}/#{@repository}", @pull_request_id
+      comments.each do |comment|
         score += comment_score(comment)
       end
+      @logger.info("Total Score: #{score}")
       score
     end
 
     def merge_pull_request(data)
-      owner = repo_owner(data)
-      repo = repo(data)
-      id = pr_number(data)
-      github = Github.new(login: 'midwire', password: "N*ibtM*Vb7AjFppE8uEE")
-      unless github.pull_requests.merged?(owner, repo, id)
-        @logger.info("Merging Pull Request: #{id} on #{owner}/#{repo}")
-        github.pull_requests.merge(owner, repo, id)
+      repo_string = "#{@owner}/#{@repository}"
+      pr = @client.pull_request repo_string, @pull_request_id
+      unless pr.merged?
+        @logger.info("Merging Pull Request: #{@pull_request_id} on #{repo_string}")
+        @client.merge_pull_request(repo_string, @pull_request_id, commit_message(data))
       end
+    end
+
+    def commit_message(data)
+      data['issue']['body']
     end
 
     def pr_number(data)
@@ -61,6 +67,10 @@ module Parliament
 
     def repo_owner(data)
       data['issue']['user']['login']
+    end
+
+    def log_comment(data)
+      @logger.info("Comment: '#{data['comment']['body']}' from '#{data['comment']['user']['login']}'")
     end
   end
 
