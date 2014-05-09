@@ -21,6 +21,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "rack"
   spec.add_dependency "netrc"
   spec.add_dependency "octokit"
+  spec.add_dependency "hashie"
 
   spec.add_development_dependency "bundler", "~> 1.6"
   spec.add_development_dependency "rake"
