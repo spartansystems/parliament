@@ -19,12 +19,12 @@ describe Parliament::Parliamentarian do
     context 'private methods' do
 
       context 'single comment score' do
-        let(:positive_comment) { double :comment, body: "+1 I suppose we should merge this" }
+        let(:positive_comment)      { double :comment, body: "+1 I suppose we should merge this" }
         let(:fake_positive_comment) { double :comment, body: "+ 1 I suppose we should merge this" }
-        let(:negative_comment) { double :comment, body: "-1 This is a bad change.}" }
+        let(:negative_comment)      { double :comment, body: "-1 This is a bad change.}" }
         let(:fake_negative_comment) { double :comment, body: "- poop This is a bad change." }
-        let(:neutral_comment)  { double :comment, body: "Who cares?" }
-        let(:blocker_comment)  { double :comment, body: "[blocker] +1" }
+        let(:neutral_comment)       { double :comment, body: "Who cares?" }
+        let(:blocker_comment)       { double :comment, body: "[blocker] +1" }
 
         it "scores a +1 for comment with a plus sign followed by a number" do
           parliamentarian.send(:comment_score, positive_comment).should == 1
