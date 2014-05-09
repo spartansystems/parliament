@@ -8,7 +8,7 @@ module Parliament
 
     def initialize(parliament_service = Parliamentarian.new)
       @parliament_service = parliament_service
-      @logger = Logger.new('log/server.log', 'daily')
+      @logger = Logger.new('log/parliamentarian.log', 'daily')
     end
 
     def call(env)
@@ -39,7 +39,7 @@ module Parliament
 
     # Handle the request if it is an 'issue_comment'
     def handle_request(env)
-      parliament_service.process(parsed_data(env)) if event_type(env) == 'issue_comment'
+      @parliament_service.process(parsed_data(env)) if event_type(env) == 'issue_comment'
     end
 
     def parsed_data(env)
