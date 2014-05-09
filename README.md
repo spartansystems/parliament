@@ -19,7 +19,13 @@ TBD
 ### GitHub
 Setup is easy, just setup the webhook for all events to a repo and it'll start handling merge requests (Parliament handles `+form` and `+json`, so use what you'd prefer).
 
-## Configuration
+Make sure you add `/webhook` to the end of the URL, as follows:
+
+```
+https://www.yourserver.com/webhook
+```
+
+## Configuration (coming soon)
 Parliament can be configured by setting configuration options within the configuration block in `application.rb`, i.e.
 
 ```ruby
