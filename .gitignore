@@ -13,8 +13,7 @@ doc/
 Gemfile.lock
 InstalledFiles
 lib/bundler/man
-log/*.log
-log/*.log.*
+/log
 mkmf.log
 pkg
 rdoc
