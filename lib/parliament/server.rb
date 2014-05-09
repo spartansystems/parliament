@@ -1,15 +1,12 @@
 require 'json'
-require 'pry'
 
 module Parliament
 
   class Server
-    attr_reader :parliament_service
-
     OK_RESPONSE = [200, {"Content-Type" => "text/html"}, ["OK"]]
     NOT_FOUND_RESPONSE = [404, {"Content-Type" => "text/html"}, ["NOT FOUND"]]
 
-    def initialize(parliament_service = Parliamentarian.new(:event))
+    def initialize(parliament_service = Parliamentarian.new)
       @parliament_service = parliament_service
       @logger = Logger.new('log/server.log', 'daily')
     end
@@ -60,6 +57,6 @@ module Parliament
     def event_type(env)
       env['HTTP_X_GITHUB_EVENT']
     end
-  end
+  end # Server
 
-end
+end # Parliament
