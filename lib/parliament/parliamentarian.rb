@@ -8,12 +8,11 @@ module Parliament
       @logger = Logger.new('log/parliamentarian.log', 'daily')
     end
 
-    # TODO: Make the score threshold configurable
     def process(data)
       @pull_request = PullRequest.new(data)
       if @pull_request.comment_exists?
         log_comment(@pull_request.comment)
-        if @pull_request.score > 3
+        if @pull_request.score > Parliament.configuration.sum
           @pull_request.merge
         end
       end
