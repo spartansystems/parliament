@@ -12,13 +12,20 @@ module Parliament
       @pull_request = PullRequest.new(data)
       if @pull_request.comment_exists?
         log_comment(@pull_request.comment)
-        if @pull_request.score > Parliament.configuration.sum
+        if ok_to_merge?(@pull_request)
           @pull_request.merge
         end
       end
     end
 
     private
+
+    def ok_to_merge?(pull_request)
+      if Parliament.configuration.status
+        return false unless pull_request.state == 'success'
+      end
+      pull_request.score > Parliament.configuration.sum
+    end
 
     def log_comment(comment)
       @logger.info("Comment: '#{comment.body}' from '#{comment.user.login}'")
