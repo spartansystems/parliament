@@ -39,11 +39,7 @@ module Parliament
 
     def state
       statuses = @client.statuses(@repo_string, sha)
-      if statuses.first
-        statuses.first.state
-      else
-        nil
-      end
+      statuses.first && statuses.first.state || nil
     end
 
     def merge
