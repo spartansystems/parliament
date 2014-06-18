@@ -71,6 +71,13 @@ describe Parliament::PullRequest do
     end
   end # single comment score
 
+  context '#comment_body_html_strikethrus_removed' do
+    it 'handles multiple strikethrus non-greedily' do
+      comment = double(:comment, body: "Hello ~~World~~ Lorem ipsum ~~dolor sit amet~~ Goodbye")
+      pull_request.send(:comment_body_html_strikethrus_removed, comment).should == "<p>Hello  Lorem ipsum  Goodbye</p>\n"
+    end
+  end
+
   context '#has_blocker?' do
     it "returns true when [blocker]" do
       pull_request.send(:has_blocker?, blocker_comment).should == true

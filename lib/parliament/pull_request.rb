@@ -66,7 +66,7 @@ module Parliament
     end
 
     def comment_body_html_strikethrus_removed(comment)
-      comment_body_html(comment).gsub(/<del>.*<\/del>/m, '')
+      comment_body_html(comment).gsub(/<del>.*?<\/del>/m, '')
     end
 
     def comment_body_html(comment)
