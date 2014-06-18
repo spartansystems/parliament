@@ -22,6 +22,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "netrc"
   spec.add_dependency "octokit"
   spec.add_dependency "hashie"
+  spec.add_dependency "github-markdown"
 
   spec.add_development_dependency "bundler", "~> 1.6"
   spec.add_development_dependency "rake"
@@ -31,4 +32,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "guard-bundler"
   spec.add_development_dependency "pry-nav"
   spec.add_development_dependency "simplecov"
+  spec.add_development_dependency "racksh"
 end
