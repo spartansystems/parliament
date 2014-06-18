@@ -93,4 +93,20 @@ describe Parliament::PullRequest do
     end
   end
 
+  context '#state' do
+    it "returns nil when no statuses" do
+      expect_any_instance_of(Octokit::Client).to receive(:statuses).and_return([])
+      pull_request.state.should == nil
+    end
+
+    it "returns state of first status" do
+      statuses = [
+        double(:status, state: 'foo'),
+        double(:status, state: 'bar')
+      ]
+      expect_any_instance_of(Octokit::Client).to receive(:statuses).and_return(statuses)
+      pull_request.state.should == 'foo'
+    end
+  end
+
 end
