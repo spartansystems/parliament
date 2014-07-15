@@ -29,24 +29,10 @@ module Parliament
     end
 
     def score
-      total = 0
-      scores_by_username = {}
-      comments = @client.issue_comments(@repo_string, @pull_request_id)
-      comments.reverse.each do |comment|
-        body = comment_body_html_strikethrus_removed(comment)
-        if has_blocker?(body)
-          total = 0
-          break
-        else
-          username = comment_username(comment)
-          unless scores_by_username[username]
-            score = comment_score(body)
-            if score != 0
-              scores_by_username[username] = score
-              total += score
-            end
-          end
-        end
+      if user_comments.any? { |comment| has_blocker?(comment.body) }
+        total = 0
+      else
+        total = scores_by_username.values.reduce(:+)
       end
       @logger.info("Total Score: #{total}")
       total
@@ -65,6 +51,23 @@ module Parliament
     end
 
     private
+
+    def user_comments
+      @user_comments ||= @client.issue_comments(@repo_string, @pull_request_id).map do |comment|
+        OpenStruct.new(
+          body: comment_body_html_strikethrus_removed(comment),
+          username: comment_username(comment)
+        )
+      end
+    end
+
+    def scores_by_username
+      @scores_by_username ||= user_comments.reduce({}) do |result, comment|
+        score = comment_score(comment.body)
+        result[comment.username] = score unless score == 0
+        result
+      end
+    end
 
     def has_blocker?(comment_body)
       ! /\[blocker\]/i.match(comment_body).nil?
