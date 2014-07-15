@@ -32,7 +32,7 @@ module Parliament
       if user_comments.any? { |comment| has_blocker?(comment.body) }
         total = 0
       else
-        total = scores_by_username.values.reduce(:+)
+        total = scores_by_username.values.reduce(:+) || 0
       end
       @logger.info("Total Score: #{total}")
       total

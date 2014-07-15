@@ -75,6 +75,11 @@ describe Parliament::PullRequest do
   end
 
   context 'all comment score' do
+    it "returns 0 when no comments" do
+      expect_any_instance_of(Octokit::Client).to receive(:issue_comments).and_return([])
+      pull_request.score.should == 0
+    end
+
     it "totals all comment scores" do
       comments = [
           double(:comment, body: blocker_comment_struckthru, user: double(:user, login: 'user1')),
