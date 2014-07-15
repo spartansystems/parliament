@@ -30,14 +30,22 @@ module Parliament
 
     def score
       total = 0
+      scores_by_username = {}
       comments = @client.issue_comments(@repo_string, @pull_request_id)
-      comments.each do |comment|
+      comments.reverse.each do |comment|
         body = comment_body_html_strikethrus_removed(comment)
         if has_blocker?(body)
           total = 0
           break
         else
-          total += comment_score(body)
+          username = comment_username(comment)
+          unless scores_by_username[username]
+            score = comment_score(body)
+            if score != 0
+              scores_by_username[username] = score
+              total += score
+            end
+          end
         end
       end
       @logger.info("Total Score: #{total}")
@@ -82,6 +90,10 @@ module Parliament
 
     def comment_body_html(comment)
       GitHub::Markdown.render(comment.body)
+    end
+
+    def comment_username(comment)
+      comment.user.login
     end
   end # class PullRequest
 

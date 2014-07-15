@@ -75,40 +75,47 @@ describe Parliament::PullRequest do
   end
 
   context 'all comment score' do
-    let(:comments_no_blocker) do
-      [
-        double(:comment, body: blocker_comment_struckthru),
-        double(:comment, body: positive_comment),
-        double(:comment, body: positive_comment),
-        double(:comment, body: negative_comment),
-        double(:comment, body: negative_comment),
-        double(:comment, body: neutral_comment),
-        double(:comment, body: positive_comment),
-        double(:comment, body: positive_comment_struckthru),
-        double(:comment, body: negative_comment_struckthru),
-        double(:comment, body: negative_comment_struckthru_and_now_positive),
+    it "totals all comment scores" do
+      comments = [
+          double(:comment, body: blocker_comment_struckthru, user: double(:user, login: 'user1')),
+          double(:comment, body: positive_comment, user: double(:user, login: 'user2')),
+          double(:comment, body: positive_comment, user: double(:user, login: 'user3')),
+          double(:comment, body: negative_comment, user: double(:user, login: 'user4')),
+          double(:comment, body: negative_comment, user: double(:user, login: 'user5')),
+          double(:comment, body: neutral_comment,  user: double(:user, login: 'user6')),
+          double(:comment, body: positive_comment, user: double(:user, login: 'user7')),
+          double(:comment, body: positive_comment_struckthru, user: double(:user, login: 'user8')),
+          double(:comment, body: negative_comment_struckthru, user: double(:user, login: 'user9')),
+          double(:comment, body: negative_comment_struckthru_and_now_positive, user: double(:user, login: 'user10')),
       ]
-    end
-
-    let(:comments_with_blocker) do
-      [
-        double(:comment, body: positive_comment),
-        double(:comment, body: positive_comment),
-        double(:comment, body: blocker_comment),
-        double(:comment, body: positive_comment),
-        double(:comment, body: negative_comment),
-        double(:comment, body: neutral_comment),
-      ]
-    end
-
-    it "totals all comments" do
-      expect_any_instance_of(Octokit::Client).to receive(:issue_comments).and_return(comments_no_blocker)
+      expect_any_instance_of(Octokit::Client).to receive(:issue_comments).and_return(comments)
       pull_request.score.should == 2
     end
 
     it "returns zero if blocker exists" do
-      expect_any_instance_of(Octokit::Client).to receive(:issue_comments).and_return(comments_with_blocker)
+      comments = [
+        double(:comment, body: positive_comment, user: double(:user, login: 'user1')),
+        double(:comment, body: positive_comment, user: double(:user, login: 'user2')),
+        double(:comment, body: blocker_comment,  user: double(:user, login: 'user3')),
+        double(:comment, body: positive_comment, user: double(:user, login: 'user4')),
+        double(:comment, body: negative_comment, user: double(:user, login: 'user5')),
+        double(:comment, body: neutral_comment,  user: double(:user, login: 'user6')),
+      ]
+      expect_any_instance_of(Octokit::Client).to receive(:issue_comments).and_return(comments)
       pull_request.score.should == 0
+    end
+
+    it "only counts last non-neutral comment from a user" do
+      comments = [
+        double(:comment, body: negative_comment, user: double(:user, login: 'user1')),
+        double(:comment, body: negative_comment, user: double(:user, login: 'user1')),
+        double(:comment, body: negative_comment, user: double(:user, login: 'user1')),
+        double(:comment, body: negative_comment, user: double(:user, login: 'user1')),
+        double(:comment, body: positive_comment, user: double(:user, login: 'user1')),
+        double(:comment, body: neutral_comment,  user: double(:user, login: 'user1')),
+      ]
+      expect_any_instance_of(Octokit::Client).to receive(:issue_comments).and_return(comments)
+      pull_request.score.should == 1
     end
 
     it "logs the total score" do
