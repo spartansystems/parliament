@@ -44,9 +44,9 @@ Parliament.configure do |config|
   #
   # default: true
   config.status = false
-
+  
   # an array of required voters' github usernames
-  # also accepts an array returning Proc that is called on each check with the raw data from the webhook.
+  # also accepts an array returning block that is called on each check.
   #
   # default: empty array
   config.required do

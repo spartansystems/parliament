@@ -161,32 +161,4 @@ describe Parliament::PullRequest do
     end
   end
 
-  context '#approved_by?' do
-    it "returns true when passed an empty array" do
-      pull_request.approved_by?([]).should == true
-    end
-
-    it "returns true when every username in passed array voted +1" do
-      comments = [
-        double(:comment, body: positive_comment, user: double(:user, login: 'user1')),
-        double(:comment, body: positive_comment, user: double(:user, login: 'user2')),
-        double(:comment, body: positive_comment, user: double(:user, login: 'user3')),
-        double(:comment, body: negative_comment, user: double(:user, login: 'user4')),
-        double(:comment, body: neutral_comment,  user: double(:user, login: 'user5')),
-      ]
-      expect_any_instance_of(Octokit::Client).to receive(:issue_comments).and_return(comments)
-      pull_request.approved_by?(%w[user1 user2 user3]).should == true
-    end
-
-    it "returns false when at least one username in passed array did not vote +1" do
-      comments = [
-        double(:comment, body: positive_comment, user: double(:user, login: 'user1')),
-        double(:comment, body: positive_comment, user: double(:user, login: 'user2')),
-        double(:comment, body: negative_comment, user: double(:user, login: 'user3')),
-      ]
-      expect_any_instance_of(Octokit::Client).to receive(:issue_comments).and_return(comments)
-      pull_request.approved_by?(%w[user1 user2 user3]).should == false
-    end
-  end
-
 end
