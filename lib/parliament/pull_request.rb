@@ -43,6 +43,13 @@ module Parliament
       statuses.first && statuses.first.state || nil
     end
 
+    def approved_by?(usernames)
+      usernames.each do |username|
+        return false if scores_by_username[username] != 1
+      end
+      true
+    end
+
     def merge
       unless pr.merged?
         @logger.info("Merging Pull Request: #{@pull_request_id} on #{@repo_string}")
