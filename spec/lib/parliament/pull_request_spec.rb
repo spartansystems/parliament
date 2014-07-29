@@ -2,17 +2,17 @@ describe Parliament::PullRequest do
   let(:data)         { Hashie::Mash.new(JSON.parse(File.read('spec/fixtures/issue.json'))) }
   let(:pull_request) { Parliament::PullRequest.new(data) }
 
-  let(:positive_comment) { double :comment, body: "+1 I suppose we should merge this" }
-  let(:fake_positive_comment) { double :comment, body: "+ 1 I suppose we should merge this" }
-  let(:positive_comment_struckthru) { double :comment, body: "~~+1 awesome~~\nOops - nvm!" }
-  let(:negative_comment) { double :comment, body: "-1 This is a bad change.}" }
-  let(:fake_negative_comment) { double :comment, body: "- poop This is a bad change." }
-  let(:negative_comment_struckthru) { double :comment, body: "~~-1 This is a bad change.~~}" }
-  let(:negative_comment_struckthru_and_now_positive) { double :comment, body: "~~-1 This is a bad change.~~Much better +1}" }
-  let(:neutral_comment) { double :comment, body: "Who cares?" }
-  let(:blocker_comment) { double :comment, body: "[blocker] +1" }
-  let(:blocker_comment_caps) { double :comment, body: "[BLOCKER] +1" }
-  let(:blocker_comment_struckthru) { double :comment, body: "~~[blocker]~~" }
+  let(:positive_comment) { "+1 I suppose we should merge this" }
+  let(:fake_positive_comment) { "+ 1 I suppose we should merge this" }
+  let(:positive_comment_struckthru) { "~~+1 awesome~~\nOops - nvm!" }
+  let(:negative_comment) { "-1 This is a bad change.}" }
+  let(:fake_negative_comment) { "- poop This is a bad change." }
+  let(:negative_comment_struckthru) { "~~-1 This is a bad change.~~}" }
+  let(:negative_comment_struckthru_and_now_positive) { "~~-1 This is a bad change.~~Much better +1}" }
+  let(:neutral_comment) { "Who cares?" }
+  let(:blocker_comment) { "[blocker] +1" }
+  let(:blocker_comment_caps) { "[BLOCKER] +1" }
+  let(:blocker_comment_struckthru) { "~~[blocker]~~" }
 
   context '#comment_exists?' do
     it "returns true if a comment exists" do
@@ -38,7 +38,7 @@ describe Parliament::PullRequest do
       pull_request.send(:comment_score, positive_comment).should == 1
     end
 
-    it "scores a -1 for comment witih a minus sign followed by a number" do
+    it "scores a -1 for comment with a minus sign followed by a number" do
       pull_request.send(:comment_score, negative_comment).should == -1
     end
 
@@ -52,22 +52,6 @@ describe Parliament::PullRequest do
 
     it "scores a 0 for comment with a minus sign with no number following" do
       pull_request.send(:comment_score, fake_negative_comment).should == 0
-    end
-
-    it "scores a 0 for comment with a +1 inside strikethru markdown" do
-      pull_request.send(:comment_score, positive_comment_struckthru).should == 0
-    end
-
-    it "scores a 0 for comment with a -1 inside strikethru markdown" do
-      pull_request.send(:comment_score, negative_comment_struckthru).should == 0
-    end
-
-    it "scores a 1 for comment with a -1 inside strikethru markdown and a +1 outside strikethru markdown" do
-      pull_request.send(:comment_score, negative_comment_struckthru_and_now_positive).should == 1
-    end
-
-    it "scores a 0 for comment with [blocker]" do
-      pull_request.send(:comment_score, blocker_comment).should == 0
     end
   end # single comment score
 
@@ -85,41 +69,58 @@ describe Parliament::PullRequest do
     it "returns true when [BLOCKER]" do
       pull_request.send(:has_blocker?, blocker_comment_caps).should == true
     end
-    it "returns false when [blocker] is struck thru" do
-      pull_request.send(:has_blocker?, blocker_comment_struckthru).should == false
+    it "returns false when no [blocker]" do
+      pull_request.send(:has_blocker?, neutral_comment).should == false
     end
   end
 
   context 'all comment score' do
-    let(:comments_with_blocker) do
-      [
-        positive_comment,
-        positive_comment,
-        blocker_comment,
-        positive_comment,
-        negative_comment,
-        neutral_comment,
-      ]
+    it "returns 0 when no comments" do
+      expect_any_instance_of(Octokit::Client).to receive(:issue_comments).and_return([])
+      pull_request.score.should == 0
     end
 
-    let(:comments_no_blocker) do
-      [
-        positive_comment,
-        positive_comment,
-        negative_comment,
-        neutral_comment,
-        positive_comment,
+    it "totals all comment scores" do
+      comments = [
+          double(:comment, body: blocker_comment_struckthru, user: double(:user, login: 'user1')),
+          double(:comment, body: positive_comment, user: double(:user, login: 'user2')),
+          double(:comment, body: positive_comment, user: double(:user, login: 'user3')),
+          double(:comment, body: negative_comment, user: double(:user, login: 'user4')),
+          double(:comment, body: negative_comment, user: double(:user, login: 'user5')),
+          double(:comment, body: neutral_comment,  user: double(:user, login: 'user6')),
+          double(:comment, body: positive_comment, user: double(:user, login: 'user7')),
+          double(:comment, body: positive_comment_struckthru, user: double(:user, login: 'user8')),
+          double(:comment, body: negative_comment_struckthru, user: double(:user, login: 'user9')),
+          double(:comment, body: negative_comment_struckthru_and_now_positive, user: double(:user, login: 'user10')),
       ]
-    end
-
-    it "totals all comments" do
-      expect_any_instance_of(Octokit::Client).to receive(:issue_comments).and_return(comments_no_blocker)
+      expect_any_instance_of(Octokit::Client).to receive(:issue_comments).and_return(comments)
       pull_request.score.should == 2
     end
 
     it "returns zero if blocker exists" do
-      expect_any_instance_of(Octokit::Client).to receive(:issue_comments).and_return(comments_with_blocker)
+      comments = [
+        double(:comment, body: positive_comment, user: double(:user, login: 'user1')),
+        double(:comment, body: positive_comment, user: double(:user, login: 'user2')),
+        double(:comment, body: blocker_comment,  user: double(:user, login: 'user3')),
+        double(:comment, body: positive_comment, user: double(:user, login: 'user4')),
+        double(:comment, body: negative_comment, user: double(:user, login: 'user5')),
+        double(:comment, body: neutral_comment,  user: double(:user, login: 'user6')),
+      ]
+      expect_any_instance_of(Octokit::Client).to receive(:issue_comments).and_return(comments)
       pull_request.score.should == 0
+    end
+
+    it "only counts last non-neutral comment from a user" do
+      comments = [
+        double(:comment, body: negative_comment, user: double(:user, login: 'user1')),
+        double(:comment, body: negative_comment, user: double(:user, login: 'user1')),
+        double(:comment, body: negative_comment, user: double(:user, login: 'user1')),
+        double(:comment, body: negative_comment, user: double(:user, login: 'user1')),
+        double(:comment, body: positive_comment, user: double(:user, login: 'user1')),
+        double(:comment, body: neutral_comment,  user: double(:user, login: 'user1')),
+      ]
+      expect_any_instance_of(Octokit::Client).to receive(:issue_comments).and_return(comments)
+      pull_request.score.should == 1
     end
 
     it "logs the total score" do

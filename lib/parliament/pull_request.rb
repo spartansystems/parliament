@@ -29,15 +29,10 @@ module Parliament
     end
 
     def score
-      total = 0
-      comments = @client.issue_comments(@repo_string, @pull_request_id)
-      comments.each do |comment|
-        if has_blocker?(comment)
-          total = 0
-          break
-        else
-          total += comment_score(comment)
-        end
+      if user_comments.any? { |comment| has_blocker?(comment.body) }
+        total = 0
+      else
+        total = scores_by_username.values.reduce(:+) || 0
       end
       @logger.info("Total Score: #{total}")
       total
@@ -57,8 +52,25 @@ module Parliament
 
     private
 
-    def has_blocker?(comment)
-      ! /\[blocker\]/i.match(comment_body_html_strikethrus_removed(comment)).nil?
+    def user_comments
+      @user_comments ||= @client.issue_comments(@repo_string, @pull_request_id).map do |comment|
+        OpenStruct.new(
+          body: comment_body_html_strikethrus_removed(comment),
+          username: comment_username(comment)
+        )
+      end
+    end
+
+    def scores_by_username
+      @scores_by_username ||= user_comments.reduce({}) do |result, comment|
+        score = comment_score(comment.body)
+        result[comment.username] = score unless score == 0
+        result
+      end
+    end
+
+    def has_blocker?(comment_body)
+      ! /\[blocker\]/i.match(comment_body).nil?
     end
 
     def sha
@@ -69,11 +81,9 @@ module Parliament
       @pr ||= @client.pull_request(@repo_string, @pull_request_id)
     end
 
-    def comment_score(comment)
-      return 0 if has_blocker?(comment)
-      body = comment_body_html_strikethrus_removed(comment)
-      return 1 if /\+\d+/.match(body)
-      return -1 if /\-\d+/.match(body)
+    def comment_score(comment_body)
+      return 1 if /\+\d+/.match(comment_body)
+      return -1 if /\-\d+/.match(comment_body)
       0
     end
 
@@ -83,6 +93,10 @@ module Parliament
 
     def comment_body_html(comment)
       GitHub::Markdown.render(comment.body)
+    end
+
+    def comment_username(comment)
+      comment.user.login
     end
   end # class PullRequest
 
