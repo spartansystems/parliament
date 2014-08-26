@@ -47,12 +47,12 @@ Parliament.configure do |config|
   config.check_status = false
 
   # an array of required voters' github usernames
-  # also accepts an array-returning Proc that is called on each check with the raw data from the webhook.
   #
   # default: empty array
-  config.required_usernames do
-      [...]
-  end
+  config.required_usernames = ['databyte', 'c0', 'pasha']
+
+  # also accepts an array-returning Proc that is called on each check with the raw data from the webhook.
+  config.required_usernames = Proc.new { |data| ... }
 
 end
 ```
