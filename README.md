@@ -27,29 +27,30 @@ Make sure you add `/webhook` to the end of the URL, as follows:
 https://www.yourserver.com/webhook
 ```
 
-## Configuration (coming soon)
+## Configuration
 Parliament can be configured by setting configuration options within the configuration block in `application.rb`, i.e.
 
 ```ruby
 Parliament.configure do |config|
 
+  # Coming soon?
   config.github_token = <GitHub Oath Token>
 
-  # the sum of +1/-1
+  # the sum of +1/-1 must be >= threshold
   #
   # default: 3
-  config.sum = 2
+  config.threshold = 2
 
   # current status must be success
   #
   # default: true
-  config.status = false
+  config.check_status = false
 
   # an array of required voters' github usernames
-  # also accepts an array returning Proc that is called on each check with the raw data from the webhook.
+  # also accepts an array-returning Proc that is called on each check with the raw data from the webhook.
   #
   # default: empty array
-  config.required do
+  config.required_usernames do
       [...]
   end
 

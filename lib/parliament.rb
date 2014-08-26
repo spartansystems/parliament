@@ -23,20 +23,14 @@ module Parliament
   end
 
   class Configuration
-    attr_accessor :sum
-    attr_accessor :status
-    attr_accessor :required
+    attr_accessor :threshold
+    attr_accessor :check_status
+    attr_accessor :required_usernames
 
     def initialize
-      # the sum of +1/-1
-      @sum = 3
-
-      # current status must be success
-      @status = true
-
-      # an array of required voters' github usernames
-      # also accepts an array returning Proc that is called on each check with the raw data from the webhook.
-      @required = []
+      @threshold = 3
+      @check_status = true
+      @required_usernames = []
     end
   end
 end
