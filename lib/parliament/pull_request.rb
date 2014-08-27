@@ -30,6 +30,7 @@ module Parliament
 
     def score
       if user_comments.any? { |comment| has_blocker?(comment.body) }
+        @logger.info("Found a blocker!")
         total = 0
       else
         total = scores_by_username.values.reduce(:+) || 0
@@ -40,13 +41,17 @@ module Parliament
 
     def state
       statuses = @client.statuses(@repo_string, sha)
-      statuses.first && statuses.first.state || nil
+      status = statuses.first && statuses.first.state || nil
+      @logger.info("Status: #{status.inspect}")
+      status
     end
 
     def approved_by?(usernames)
       usernames.each do |username|
+        @logger.info("Not approved by: #{username}")
         return false if scores_by_username[username] != 1
       end
+      @logger.info("Approved by: #{usernames.inspect}")
       true
     end
 

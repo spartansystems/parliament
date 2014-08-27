@@ -13,13 +13,16 @@ module Parliament
       if @pull_request.comment_exists?
         log_comment(@pull_request.comment)
         if ok_to_merge?(@pull_request, data)
+          @logger.info("Ok to merge")
           @pull_request.merge
+        else
+          @logger.info("Not ok to merge")
         end
       end
     end
 
     def required_usernames(data)
-      required = Parliament.configuration.required
+      required = Parliament.configuration.required_usernames
       if required.respond_to?(:call)
         required.call(data)
       else
@@ -30,11 +33,25 @@ module Parliament
     private
 
     def ok_to_merge?(pull_request, data)
-      if Parliament.configuration.status
-        return false unless pull_request.state == 'success'
+      status_ok?(pull_request) &&
+      required_users_ok?(pull_request, data) &&
+      score_ok?(pull_request)
+    end
+
+    def status_ok?(pull_request)
+      if Parliament.configuration.check_status
+        pull_request.state == 'success'
+      else
+        true
       end
-      return false unless pull_request.approved_by?(required_usernames(data))
-      pull_request.score > Parliament.configuration.sum
+    end
+
+    def required_users_ok?(pull_request, data)
+      pull_request.approved_by?(required_usernames(data))
+    end
+
+    def score_ok?(pull_request)
+      pull_request.score >= Parliament.configuration.threshold
     end
 
     def log_comment(comment)
